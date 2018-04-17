@@ -293,7 +293,7 @@
                     //local search/filter
                     if (angular.isUndefined($scope.mdtRowPaginator)) {
                         $scope.$watch('mdtRow', function (mdtRow) {
-                            vm.dataStorage.storage = [];
+                            vm.dataStorage.clearAllRowData();
 
                             _addRawDataToStorage(mdtRow['data']);
                         }, true);
@@ -503,7 +503,7 @@
 
             return this.paginatorFunction(callbackArguments)
                 .then(function(data){
-                    that.dataStorage.storage = [];
+                    that.dataStorage.clearAllRowData();
                     that.setRawDataToStorage(that, data.results, that.rowOptions['table-row-id-key'], that.rowOptions['column-keys'], that.rowOptions);
                     that.totalResultCount = data.totalResultCount;
                     that.totalPages = Math.ceil(data.totalResultCount / that.rowsPerPage);
@@ -518,7 +518,7 @@
                     that.isLoading = false;
 
                 }, function(){
-                    that.dataStorage.storage = [];
+                    that.dataStorage.clearAllRowData();
 
                     that.isLoadError = true;
                     that.isLoading = false;
@@ -688,11 +688,11 @@
 (function(){
     'use strict';
 
-    TableDataStorageFactory.$inject = ['$log', '_'];
-    function TableDataStorageFactory($log, _){
+    TableDataStorageFactory.$inject = ['TableDataStorageArray', '$log', '_'];
+    function TableDataStorageFactory(TableDataStorageArray, $log, _){
 
         function TableDataStorageService(){
-            this.storage = [];
+            this.storage = TableDataStorageArray;
             this.header = [];
             this.customCells = {};
         }
@@ -700,6 +700,7 @@
         TableDataStorageService.prototype.addHeaderCellData = function(ops){
             this.header.push(ops);
         };
+
 
         TableDataStorageService.prototype.addRowData = function(explicitRowId, rowArray, className){
             if(!(rowArray instanceof Array)){
@@ -819,15 +820,26 @@
         };
 
         return {
+            clearAllRowData: function() {
+                TableDataStorageArray.splice(0, TableDataStorageArray.length);
+            },
             getInstance: function(){
                 return new TableDataStorageService();
             }
         };
     }
-
     angular
         .module('mdDataTable')
         .factory('TableDataStorageFactory', TableDataStorageFactory);
+
+    function TableDataStorageArray() {
+        return new Array();
+    }
+    angular
+        .module('mdDataTable')
+        .factory('TableDataStorageArray', TableDataStorageArray);
+
+
 }());
 (function(){
     'use strict';
